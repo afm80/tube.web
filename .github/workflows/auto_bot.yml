@@ -1,1 +1,33 @@
+name: Alfaham Tube Auto Bot
 
+on:
+  schedule:
+    # دورة واحدة كل ساعتين لتقليل استهلاك YouTube API والحصة اليومية
+    - cron: '0 */2 * * *'
+  workflow_dispatch: # يتيح لك تشغيله يدوياً للاختبار متى شئت
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install requests
+
+      - name: Run Bot Script
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-3.5-flash-lite
+          FIREBASE_URL: https://alfaham-tube-web-default-rtdb.firebaseio.com
+        working-directory: bot
+        run: |
+          python bot.py
