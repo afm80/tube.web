@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - "app/**"
+      - "firebase.json"
       - ".github/workflows/flutter_build.yml"
 
 jobs:
@@ -58,3 +59,12 @@ jobs:
         with:
           name: alfaham-tube-web
           path: app/build/web
+
+      - name: Deploy web to Firebase Hosting (web.app)
+        if: github.ref == 'refs/heads/main'
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: alfaham-tube-web
+          channelId: live
+          entryPoint: .

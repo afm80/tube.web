@@ -7,7 +7,7 @@ class AppConfig {
 
   /// رابط الموقع (بدون / في النهاية) لاستخدامه في المشاركة. مثال: https://example.com
   /// إذا تُرك فارغًا تُشارك الروابط من رابط الفيديو نفسه.
-  static const String siteUrl = '';
+  static const String siteUrl = 'https://alfaham-tube-web.web.app';
 
   static const String fallbackImage =
       'https://raw.githubusercontent.com/h-80/img/refs/heads/main/Alfaham%20tube%201.png';

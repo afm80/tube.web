@@ -1,0 +1,13 @@
+{
+  "hosting": {
+    "public": "app/build/web",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [{ "source": "**", "destination": "/index.html" }],
+    "headers": [
+      {
+        "source": "/@(index.html|flutter_service_worker.js|flutter_bootstrap.js|version.json)",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+      }
+    ]
+  }
+}

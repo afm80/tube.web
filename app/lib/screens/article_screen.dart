@@ -56,7 +56,7 @@ class _ArticleViewState extends State<_ArticleView> {
   String get _link {
     final a = widget.article;
     if (AppConfig.siteUrl.isNotEmpty) {
-      return '${AppConfig.siteUrl}/article.html?id=${Uri.encodeComponent(a.id)}';
+      return '${AppConfig.siteUrl}/#/article/${Uri.encodeComponent(a.id)}';
     }
     return a.videoUrls.isNotEmpty ? a.videoUrls.first : '';
   }
