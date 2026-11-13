@@ -5,7 +5,7 @@ import '../data_service.dart';
 import '../models.dart';
 import '../utils.dart';
 import '../widgets/article_card.dart';
-import '../widgets/net_image.dart';
+import '../widgets/category_card.dart';
 import '../widgets/shell.dart';
 
 /// صفحة قسم، أو نتائج بحث (نفس منطق index.html?category=&q=).
@@ -49,8 +49,9 @@ class _BrowseScreenState extends State<BrowseScreen> {
   Widget _content() {
     return LayoutBuilder(builder: (context, constraints) {
       final w = constraints.maxWidth;
-      final hp = sidePadding(w, w <= 768 ? 12 : 20);
-      final cols = w >= 900 ? 3 : (w >= 480 ? 2 : 1);
+      final hp = sidePadding(w, w < 400 ? 10 : (w <= 768 ? 12 : 20));
+      final cols = gridColumns(w);
+      final gap = gridGap(w);
 
       final q = (widget.query ?? '').trim().toLowerCase();
       final list = store.articles.where((a) {
@@ -80,12 +81,12 @@ class _BrowseScreenState extends State<BrowseScreen> {
               sliver: SliverGrid(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: cols,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  mainAxisExtent: 96,
+                  mainAxisSpacing: gap,
+                  crossAxisSpacing: gap,
+                  childAspectRatio: 16 / 9,
                 ),
                 delegate: SliverChildBuilderDelegate(
-                  (context, i) => _SubCategoryCard(category: children[i]),
+                  (context, i) => CategoryCard(category: children[i]),
                   childCount: children.length,
                 ),
               ),
@@ -119,8 +120,8 @@ class _BrowseScreenState extends State<BrowseScreen> {
               sliver: SliverGrid(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: cols,
-                  mainAxisSpacing: 18,
-                  crossAxisSpacing: 18,
+                  mainAxisSpacing: gap,
+                  crossAxisSpacing: gap,
                   childAspectRatio: 16 / 9,
                 ),
                 delegate: SliverChildBuilderDelegate(
@@ -179,60 +180,6 @@ class _PageButton extends StatelessWidget {
                   color: active ? Colors.white : const Color(0xFFEEEEEE),
                   fontWeight: FontWeight.w700,
                   fontSize: 15)),
-        ),
-      ),
-    );
-  }
-}
-
-class _SubCategoryCard extends StatelessWidget {
-  final Category category;
-
-  const _SubCategoryCard({required this.category});
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () => openCategory(context, category),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            color: AppColors.surface,
-            child: Row(
-              children: [
-                Container(width: 5, color: AppColors.accentRed2),
-                const SizedBox(width: 14),
-                SizedBox(
-                  width: 56,
-                  height: 56,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: NetImage(
-                      url: category.iconUrl.isEmpty
-                          ? AppConfig.fallbackImage
-                          : category.iconUrl,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                    category.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        color: AppColors.text,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700),
-                  ),
-                ),
-                const SizedBox(width: 10),
-              ],
-            ),
-          ),
         ),
       ),
     );
