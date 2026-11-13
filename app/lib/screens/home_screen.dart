@@ -74,7 +74,7 @@ class _HomeBody extends StatelessWidget {
           crossAxisCount: gridColumns(w),
           mainAxisSpacing: gap,
           crossAxisSpacing: gap,
-          childAspectRatio: 16 / 9,
+          mainAxisExtent: cardExtent(cellWidth(w, hp, gridColumns(w), gap)),
         ),
         itemCount: roots.length,
         itemBuilder: (context, i) => CategoryCard(category: roots[i]),
