@@ -15,6 +15,27 @@ int _int(dynamic v) {
 
 bool _truthy(dynamic v) => v == true || v == 'true' || v == 1;
 
+/// يفك ترميز HTML في العناوين القادمة من يوتيوب (مثل &quot; و &#39; و &amp;).
+String decodeEntities(String input) {
+  if (!input.contains('&')) return input;
+  var out = input.replaceAllMapped(RegExp(r'&#(\d+);'), (m) {
+    final code = int.tryParse(m[1]!);
+    return code == null ? m[0]! : String.fromCharCode(code);
+  });
+  out = out.replaceAllMapped(RegExp(r'&#[xX]([0-9a-fA-F]+);'), (m) {
+    final code = int.tryParse(m[1]!, radix: 16);
+    return code == null ? m[0]! : String.fromCharCode(code);
+  });
+  return out
+      .replaceAll('&quot;', '"')
+      .replaceAll('&apos;', "'")
+      .replaceAll('&lt;', '<')
+      .replaceAll('&gt;', '>')
+      .replaceAll('&nbsp;', ' ')
+      .replaceAll('&amp;', '&');
+}
+
+
 class Category {
   final String id;
   final String name;
@@ -41,9 +62,9 @@ class Category {
     final parent = _str(v['parentId']);
     return Category(
       id: id,
-      name: name.isEmpty ? 'قسم' : name,
-      sectionTitle:
-          _firstNonEmpty(v, ['sectionTitle', 'columnTitle', 'titleLabel', 'name']),
+      name: name.isEmpty ? 'قسم' : decodeEntities(name),
+      sectionTitle: decodeEntities(
+          _firstNonEmpty(v, ['sectionTitle', 'columnTitle', 'titleLabel', 'name'])),
       url: _str(v['url']),
       iconUrl: _firstNonEmpty(
           v, ['iconUrl', 'imageUrl', 'logoUrl', 'icon', 'image', 'categoryImage']),
@@ -100,7 +121,7 @@ class Article {
         urls.isNotEmpty ? urls : (single.isNotEmpty ? [single] : <String>[]);
     return Article(
       id: id,
-      title: _str(v['title']),
+      title: decodeEntities(_str(v['title'])),
       categoryId: _str(v['categoryId']),
       imageUrl: _str(v['imageUrl']),
       url: _firstNonEmpty(v, ['url', 'link']),
