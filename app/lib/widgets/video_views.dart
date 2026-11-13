@@ -9,8 +9,14 @@ import '../utils.dart';
 class YoutubeView extends StatefulWidget {
   final String videoId;
   final bool autoPlay;
+  final bool mute;
 
-  const YoutubeView({super.key, required this.videoId, this.autoPlay = false});
+  const YoutubeView({
+    super.key,
+    required this.videoId,
+    this.autoPlay = false,
+    this.mute = true,
+  });
 
   @override
   State<YoutubeView> createState() => _YoutubeViewState();
@@ -27,7 +33,7 @@ class _YoutubeViewState extends State<YoutubeView> {
       autoPlay: widget.autoPlay,
       params: YoutubePlayerParams(
         showFullscreenButton: true,
-        mute: widget.autoPlay,
+        mute: widget.autoPlay && widget.mute,
         strictRelatedVideos: true,
       ),
     );
@@ -49,8 +55,14 @@ class _YoutubeViewState extends State<YoutubeView> {
 class DirectVideoView extends StatefulWidget {
   final String url;
   final bool autoPlay;
+  final bool mute;
 
-  const DirectVideoView({super.key, required this.url, this.autoPlay = false});
+  const DirectVideoView({
+    super.key,
+    required this.url,
+    this.autoPlay = false,
+    this.mute = true,
+  });
 
   @override
   State<DirectVideoView> createState() => _DirectVideoViewState();
@@ -81,7 +93,7 @@ class _DirectVideoViewState extends State<DirectVideoView> {
       );
       _vc = vc;
       await vc.initialize();
-      if (widget.autoPlay) await vc.setVolume(0);
+      if (widget.autoPlay && widget.mute) await vc.setVolume(0);
       if (!mounted) return;
       final ratio = vc.value.aspectRatio;
       setState(() {
