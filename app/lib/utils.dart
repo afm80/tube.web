@@ -122,3 +122,14 @@ double gridGap(double width) => width < 400 ? 10 : (width < 700 ? 14 : 18);
 /// حجم خط عنوان البطاقة حسب عرض البطاقة نفسها.
 double cardFontSize(double cardWidth) =>
     (cardWidth * 0.058).clamp(11.5, 18.0).toDouble();
+
+/// ارتفاع نص عنوان البطاقة (سطران) تحت الصورة.
+double cardTextHeight(double cardWidth) => cardFontSize(cardWidth) * 1.35 * 2 + 2;
+
+/// ارتفاع البطاقة الكاملة: صورة 16:9 + مسافة + العنوان تحتها.
+double cardExtent(double cardWidth) =>
+    cardWidth * 9 / 16 + 6 + cardTextHeight(cardWidth) + 1;
+
+/// عرض البطاقة الواحدة في الشبكة.
+double cellWidth(double totalWidth, double sidePad, int cols, double gap) =>
+    (totalWidth - sidePad * 2 - gap * (cols - 1)) / cols;
