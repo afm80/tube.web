@@ -26,7 +26,7 @@ jobs:
         run: |
           cp -r lib /tmp/lib_bak
           cp pubspec.yaml /tmp/pubspec_bak.yaml
-          flutter create . --platforms=android,web --org com.alfaham --project-name alfaham_tube
+          flutter create . --platforms=android,web --org app.alfaham --project-name tube
           rm -rf lib test analysis_options.yaml
           cp -r /tmp/lib_bak lib
           cp /tmp/pubspec_bak.yaml pubspec.yaml
@@ -37,6 +37,8 @@ jobs:
           sed -i 's|android:label="[^"]*"|android:label="Alfaham Tube"|' "$M"
           sed -i 's|<application|<uses-permission android:name="android.permission.INTERNET"/>\n    <application android:usesCleartextTraffic="true"|' "$M"
           sed -i 's|<title>.*</title>|<title>Alfaham Tube</title>|' web/index.html
+          sed -i 's|"name": "[^"]*"|"name": "Alfaham Tube"|; s|"short_name": "[^"]*"|"short_name": "Alfaham Tube"|; s|"background_color": "[^"]*"|"background_color": "#000000"|; s|"theme_color": "[^"]*"|"theme_color": "#000000"|' web/manifest.json
+          grep -n "applicationId\|namespace" android/app/build.gradle* || true
 
       - run: flutter pub get
 
