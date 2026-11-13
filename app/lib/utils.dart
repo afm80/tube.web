@@ -107,3 +107,18 @@ double sidePadding(double width, double base) {
   final extra = (width - AppConfig.maxContentWidth) / 2;
   return extra > 0 ? extra + base : base;
 }
+
+/// عدد أعمدة الشبكة حسب عرض الشاشة (الجوال الصغير 1، الجوال 2، التابلت 3، الويب 4).
+int gridColumns(double width) {
+  if (width >= 900) return 4;
+  if (width >= 600) return 3;
+  if (width >= 340) return 2;
+  return 1;
+}
+
+/// المسافة بين البطاقات: أصغر على الشاشات الصغيرة.
+double gridGap(double width) => width < 400 ? 10 : (width < 700 ? 14 : 18);
+
+/// حجم خط عنوان البطاقة حسب عرض البطاقة نفسها.
+double cardFontSize(double cardWidth) =>
+    (cardWidth * 0.058).clamp(11.5, 18.0).toDouble();
