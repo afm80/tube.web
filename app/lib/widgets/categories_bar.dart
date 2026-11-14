@@ -22,14 +22,14 @@ class CategoriesBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 84,
+          height: 92,
           child: AnimatedBuilder(
             animation: store,
             builder: (context, _) {
               final roots = store.roots;
               return ListView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 children: [
                   _Item(
                     label: 'الرئيسية',
@@ -94,8 +94,27 @@ class _Item extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              icon,
-              const SizedBox(height: 4),
+              Container(
+                width: 26,
+                height: 3,
+                margin: const EdgeInsets.only(bottom: 3),
+                decoration: BoxDecoration(
+                  color: active ? AppColors.accentRed2 : Colors.transparent,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: active ? AppColors.accentRed2 : Colors.transparent,
+                    width: 2,
+                  ),
+                ),
+                child: icon,
+              ),
+              const SizedBox(height: 3),
               Text(
                 label,
                 maxLines: 1,
@@ -103,7 +122,7 @@ class _Item extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: active ? FontWeight.w800 : FontWeight.w600,
                   color: active ? AppColors.accentRed2 : AppColors.text,
                 ),
               ),
