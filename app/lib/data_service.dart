@@ -100,6 +100,20 @@ class DataStore extends ChangeNotifier {
     return list;
   }
 
+  /// آباء القسم من الأعلى إلى الأقرب (للمسار أعلى الصفحة).
+  List<Category> ancestorsOf(String id) {
+    final out = <Category>[];
+    final seen = <String>{id};
+    var current = categoryById(id);
+    while (current != null && current.parentId != null) {
+      final parent = categoryById(current.parentId!);
+      if (parent == null || !seen.add(parent.id)) break;
+      out.insert(0, parent);
+      current = parent;
+    }
+    return out;
+  }
+
   /// القسم وكل أقسامه الفرعية.
   Set<String> categoryFilter(String id) {
     final ids = <String>{id};

@@ -87,6 +87,7 @@ class Article {
   final int createdAt;
   final bool pinned;
   final bool videoPinned;
+  final bool isLive;
 
   const Article({
     required this.id,
@@ -100,6 +101,7 @@ class Article {
     required this.createdAt,
     required this.pinned,
     required this.videoPinned,
+    required this.isLive,
   });
 
   factory Article.fromJson(String id, Map<String, dynamic> v) {
@@ -131,6 +133,7 @@ class Article {
       createdAt: _int(v['createdAt']),
       pinned: _truthy(v['pinned']),
       videoPinned: _truthy(v['videoPinned']),
+      isLive: _truthy(v['isLive']),
     );
   }
 }

@@ -12,8 +12,8 @@ class AppConfig {
   static const String fallbackImage =
       'https://raw.githubusercontent.com/h-80/img/refs/heads/main/Alfaham%20tube%201.png';
 
-  static const int articlesPerPage = 12;
-  static const double maxContentWidth = 1200;
+  static const int rowsPerPage = 6;
+  static const double maxContentWidth = 1400;
 }
 
 class AppColors {

@@ -108,12 +108,16 @@ double sidePadding(double width, double base) {
   return extra > 0 ? extra + base : base;
 }
 
-/// عدد أعمدة الشبكة حسب عرض الشاشة (الجوال الصغير 1، الجوال 2، التابلت 3، الويب 4).
+/// الهامش الجانبي للصفحة حسب العرض.
+double pageSidePad(double width) =>
+    sidePadding(width, width < 400 ? 10 : (width <= 768 ? 12 : 20));
+
+/// عدد الأعمدة: أصغر عرض مريح للبطاقة نحو 140 بكسل (عمودان على الجوال، وأكثر كلما كبرت الشاشة).
 int gridColumns(double width) {
-  if (width >= 900) return 4;
-  if (width >= 600) return 3;
-  if (width >= 340) return 2;
-  return 1;
+  final usable = width - pageSidePad(width) * 2;
+  final gap = gridGap(width);
+  final c = ((usable + gap) / (140 + gap)).floor();
+  return c.clamp(2, 6);
 }
 
 /// المسافة بين البطاقات: أصغر على الشاشات الصغيرة.
