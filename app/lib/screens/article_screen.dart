@@ -104,7 +104,9 @@ class _ArticleViewState extends State<_ArticleView> {
     final hasCustomImage = a.imageUrl.isNotEmpty;
     final hasContentImage = RegExp(r'<img\b', caseSensitive: false).hasMatch(content);
     final hasVideo = a.videoUrls.isNotEmpty;
-    final hasDetails = hasText || hasCustomImage || hasContentImage;
+    // صورة الفيديو تظهر في الكرت فقط، ولا تظهر أعلى المشغّل.
+    final showImage = hasCustomImage && !hasVideo;
+    final hasDetails = hasText || showImage || hasContentImage;
     final videoOnly = hasVideo && !hasDetails;
 
     final html = content.contains('<') ? content : content.replaceAll('\n', '<br>');
@@ -158,7 +160,7 @@ class _ArticleViewState extends State<_ArticleView> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                if (hasCustomImage) ...[
+                if (showImage) ...[
                   ClipRRect(
                     borderRadius: BorderRadius.circular(narrow ? 8 : 12),
                     child: Image.network(
