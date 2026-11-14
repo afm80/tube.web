@@ -6,9 +6,11 @@ import '../config.dart';
 import '../data_service.dart';
 import '../models.dart';
 import '../utils.dart';
+import '../widgets/article_card.dart';
 import '../widgets/media_card.dart';
 import '../widgets/pagination.dart';
 import '../widgets/shell.dart';
+import '../widgets/skeleton.dart';
 import '../widgets/video_views.dart';
 
 class ArticleScreen extends StatelessWidget {
@@ -24,7 +26,7 @@ class ArticleScreen extends StatelessWidget {
         animation: store,
         builder: (context, _) {
           if (store.loading && store.articles.isEmpty) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.red));
+            return const SkeletonGrid();
           }
           final a = store.articleById(articleId);
           if (a == null) {
@@ -80,6 +82,15 @@ class _ArticleViewState extends State<_ArticleView> {
     if (mounted) setState(() => _status = 'تم نسخ الرابط');
   }
 
+  int _colsFor(double width) => ((width + 10) / 150).floor().clamp(2, 4);
+
+  void _scrollTop() {
+    if (_sc.hasClients) {
+      _sc.animateTo(0,
+          duration: const Duration(milliseconds: 350), curve: Curves.easeOut);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final a = widget.article;
@@ -106,11 +117,25 @@ class _ArticleViewState extends State<_ArticleView> {
     return LayoutBuilder(builder: (context, constraints) {
       final w = constraints.maxWidth;
       final narrow = w <= 768;
+      final outerW = narrow ? w - 20 : 820.0; // عرض الصندوق
+      final innerW = narrow ? w - 44 : 760.0; // عرض المحتوى داخل الصندوق
+      final epCols = _colsFor(innerW);
+      final epPerPage = epCols * AppConfig.rowsPerPage;
+      final total = a.videoUrls.length;
+
+      final similarCols = _colsFor(outerW);
+      final similar = a.categoryId.isEmpty
+          ? <Article>[]
+          : store.articles
+              .where((x) => x.id != a.id && x.categoryId == a.categoryId)
+              .take(similarCols == 4 ? 8 : 6)
+              .toList();
+
       return ListView(
         controller: _sc,
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.symmetric(
-            horizontal: narrow ? 10 : (w - 820) / 2, vertical: 14),
+        padding: EdgeInsets.fromLTRB(
+            narrow ? 10 : (w - 820) / 2, 14, narrow ? 10 : (w - 820) / 2, 28),
         children: [
           Container(
             padding: EdgeInsets.symmetric(
@@ -146,22 +171,49 @@ class _ArticleViewState extends State<_ArticleView> {
                   ),
                   const SizedBox(height: 20),
                 ],
-                if (a.videoUrls.length == 1) ...[
+                if (total == 1) ...[
                   _video(a.videoUrls[0], autoPlay: true, mute: true, keyId: '0'),
                   const SizedBox(height: 20),
-                ] else if (a.videoUrls.length > 1) ...[
+                ] else if (total > 1) ...[
                   _video(a.videoUrls[_ep],
                       autoPlay: true, mute: !_epTapped, keyId: '$_ep'),
-                  const SizedBox(height: 8),
-                  Text(
-                    'الحلقة ${_ep + 1} من ${a.videoUrls.length}',
-                    style: const TextStyle(
-                        color: AppColors.accentRed2,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'الحلقة ${_ep + 1} من $total',
+                          style: const TextStyle(
+                              color: AppColors.accentRed2,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800),
+                        ),
+                      ),
+                      if (_ep < total - 1)
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _ep = _ep + 1;
+                              _epTapped = true;
+                              _epPage = (_ep ~/ epPerPage) + 1;
+                            });
+                            _scrollTop();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.red,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 8),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                          ),
+                          child: const Text('الحلقة التالية ‹',
+                              style: TextStyle(fontWeight: FontWeight.w800)),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 16),
-                  _episodes(a),
+                  _episodes(a, innerW, epCols, epPerPage),
                   const SizedBox(height: 20),
                 ],
                 if (!videoOnly) ...[
@@ -202,9 +254,58 @@ class _ArticleViewState extends State<_ArticleView> {
               ],
             ),
           ),
+          if (similar.isNotEmpty) ...[
+            const SizedBox(height: 22),
+            const Row(
+              children: [
+                SizedBox(
+                  width: 4,
+                  height: 20,
+                  child: ColoredBox(color: AppColors.accentRed2),
+                ),
+                SizedBox(width: 8),
+                Text(
+                  'فيديوهات مشابهة',
+                  style: TextStyle(
+                      color: AppColors.text,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _cardsGrid(
+              width: outerW,
+              cols: similarCols,
+              itemCount: similar.length,
+              builder: (i) => ArticleCard(article: similar[i]),
+            ),
+          ],
         ],
       );
     });
+  }
+
+  Widget _cardsGrid({
+    required double width,
+    required int cols,
+    required int itemCount,
+    required Widget Function(int) builder,
+  }) {
+    const gap = 10.0;
+    final cw = (width - gap * (cols - 1)) / cols;
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: cols,
+        mainAxisSpacing: gap,
+        crossAxisSpacing: gap,
+        mainAxisExtent: cardExtent(cw),
+      ),
+      itemCount: itemCount,
+      itemBuilder: (context, i) => builder(i),
+    );
   }
 
   Widget _video(String url,
@@ -222,72 +323,55 @@ class _ArticleViewState extends State<_ArticleView> {
   }
 
   /// الحلقات كبطاقات شبكية (الصورة المصغّرة والعنوان تحتها). الضغط يشغّل الحلقة.
-  Widget _episodes(Article a) {
+  Widget _episodes(Article a, double width, int cols, int perPage) {
     final total = a.videoUrls.length;
-    final perPage = AppConfig.articlesPerPage;
     final pages = (total / perPage).ceil();
     final page = _epPage.clamp(1, pages);
     final start = (page - 1) * perPage;
     final end = start + perPage > total ? total : start + perPage;
 
-    return LayoutBuilder(builder: (context, c) {
-      final iw = c.maxWidth;
-      final cols = iw < 220 ? 1 : (iw < 520 ? 2 : 3);
-      const gap = 10.0;
-      final cw = (iw - gap * (cols - 1)) / cols;
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'الحلقات ($total)',
-            style: const TextStyle(
-                color: AppColors.text, fontSize: 18, fontWeight: FontWeight.w800),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'الحلقات ($total)',
+          style: const TextStyle(
+              color: AppColors.text, fontSize: 18, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 10),
+        _cardsGrid(
+          width: width,
+          cols: cols,
+          itemCount: end - start,
+          builder: (i) {
+            final idx = start + i;
+            final id = youtubeId(a.videoUrls[idx]);
+            return MediaCard(
+              imageUrl: id != null ? 'https://img.youtube.com/vi/$id/hqdefault.jpg' : '',
+              title: 'الحلقة ${idx + 1}',
+              placeholderIcon: Icons.play_circle_outline,
+              showPlay: true,
+              selected: idx == _ep,
+              onTap: () {
+                setState(() {
+                  _ep = idx;
+                  _epTapped = true;
+                });
+                _scrollTop();
+              },
+            );
+          },
+        ),
+        if (pages > 1) ...[
+          const SizedBox(height: 14),
+          Pagination(
+            total: pages,
+            page: page,
+            onPage: (p) => setState(() => _epPage = p),
           ),
-          const SizedBox(height: 10),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: cols,
-              mainAxisSpacing: gap,
-              crossAxisSpacing: gap,
-              mainAxisExtent: cardExtent(cw),
-            ),
-            itemCount: end - start,
-            itemBuilder: (context, i) {
-              final idx = start + i;
-              final id = youtubeId(a.videoUrls[idx]);
-              return MediaCard(
-                imageUrl: id != null ? 'https://img.youtube.com/vi/$id/hqdefault.jpg' : '',
-                title: 'الحلقة ${idx + 1}',
-                placeholderIcon: Icons.play_circle_outline,
-                showPlay: true,
-                selected: idx == _ep,
-                onTap: () {
-                  setState(() {
-                    _ep = idx;
-                    _epTapped = true;
-                  });
-                  if (_sc.hasClients) {
-                    _sc.animateTo(0,
-                        duration: const Duration(milliseconds: 350),
-                        curve: Curves.easeOut);
-                  }
-                },
-              );
-            },
-          ),
-          if (pages > 1) ...[
-            const SizedBox(height: 14),
-            Pagination(
-              total: pages,
-              page: page,
-              onPage: (p) => setState(() => _epPage = p),
-            ),
-          ],
         ],
-      );
-    });
+      ],
+    );
   }
 
   Widget _shareBlock(String title) {

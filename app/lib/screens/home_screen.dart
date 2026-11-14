@@ -5,6 +5,7 @@ import '../data_service.dart';
 import '../utils.dart';
 import '../widgets/category_card.dart';
 import '../widgets/shell.dart';
+import '../widgets/skeleton.dart';
 
 /// الرئيسية: بطاقات الأقسام الرئيسية فقط (شبكة).
 class HomeScreen extends StatelessWidget {
@@ -18,7 +19,7 @@ class HomeScreen extends StatelessWidget {
         animation: store,
         builder: (context, _) {
           if (store.loading && store.categories.isEmpty) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.red));
+            return const SkeletonGrid();
           }
           if (store.failed && store.categories.isEmpty) {
             return RetryView(onRetry: store.load);
@@ -41,8 +42,9 @@ class _HomeBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       final w = constraints.maxWidth;
-      final hp = sidePadding(w, w < 400 ? 10 : (w <= 768 ? 12 : 20));
+      final hp = pageSidePad(w);
       final gap = gridGap(w);
+      final cols = gridColumns(w);
       final roots = [...store.roots]..sort((a, b) => a.name.compareTo(b.name));
 
       if (roots.isEmpty) {
@@ -71,10 +73,10 @@ class _HomeBody extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.fromLTRB(hp, 14, hp, 24),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: gridColumns(w),
+          crossAxisCount: cols,
           mainAxisSpacing: gap,
           crossAxisSpacing: gap,
-          mainAxisExtent: cardExtent(cellWidth(w, hp, gridColumns(w), gap)),
+          mainAxisExtent: cardExtent(cellWidth(w, hp, cols, gap)),
         ),
         itemCount: roots.length,
         itemBuilder: (context, i) => CategoryCard(category: roots[i]),
